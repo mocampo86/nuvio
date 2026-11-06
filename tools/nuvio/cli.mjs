@@ -22,6 +22,7 @@ import {
   formatFindingsTable,
   mergeReviewRound
 } from './lib/findings.mjs';
+import { inferBranchType, resolvePrTitle } from './lib/checks.mjs';
 import {
   branchProtectionPayload,
   ensureGhAuth,
@@ -85,6 +86,7 @@ const OPTIONS = {
   new: { type: 'boolean' },
   slug: { type: 'string' },
   type: { type: 'string' },
+  scope: { type: 'string' },
   mode: { type: 'string' },
   file: { type: 'string' },
   selection: { type: 'string' },
@@ -190,7 +192,8 @@ Git y calidad
   select-fixes --selection "REV-001,REV-003"|all|blocking|none    Registra los fixes aprobados por el usuario
   gate [--ci] [--title "..."]                                     Quality gates previos al PR
 GitHub
-  pr --title "..." [--body-file <md>] [--dry-run]                 Valida gates, pushea y crea/actualiza el PR (nunca mergea)
+  pr [--title "..."] [--type feat] [--scope <scope>] [--body-file <md>] [--dry-run]
+                                                                    Genera/ajusta el título, valida gates, pushea y crea/actualiza el PR (nunca mergea)
   ci-status                                                       Estado de los checks del PR
   protect-main [--dry-run]                                        Configura la protección de main (acción manual)
   doctor                                                          Verifica skills, hooks, configuración y herramientas`);
@@ -642,7 +645,18 @@ GitHub
     const title = values.title ?? process.env.NUVIO_PR_TITLE;
     const result = values.ci
       ? ciGate(root, config, { prTitle: title })
-      : localGate(root, config, withRun(ctx).state, { prTitle: title });
+      : (() => {
+          const { state } = withRun(ctx);
+          const localTitle =
+            title ??
+            resolvePrTitle(undefined, {
+              usId: state.usId,
+              type: inferBranchType(state.branch),
+              description: state.title
+            });
+          if (title === undefined) print(`Título de PR sugerido: "${localTitle}"`);
+          return localGate(root, config, state, { prTitle: localTitle });
+        })();
     print(formatChecks(result.checks));
     if (!result.passed) throw new NuvioError('Quality gates NO superados.');
     print('Quality gates superados.');
@@ -657,8 +671,14 @@ GitHub
         EXIT.usage
       );
     }
-    const title = values.title ?? state.pr.title;
-    if (!title) throw new NuvioError('Falta --title.', EXIT.usage);
+    const rawTitle = values.title ?? state.pr.title;
+    const title = resolvePrTitle(rawTitle, {
+      usId: state.usId,
+      type: values.type ?? inferBranchType(state.branch),
+      scope: values.scope,
+      description: state.title
+    });
+    if (title !== rawTitle) print(`Título del PR generado/ajustado: "${title}"`);
     const gate = localGate(root, config, state, { prTitle: title });
     print(formatChecks(gate.checks));
     if (!gate.passed) throw new NuvioError('Quality gates NO superados; no se crea el PR.');

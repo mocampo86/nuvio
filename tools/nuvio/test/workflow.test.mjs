@@ -222,7 +222,9 @@ describe('end-to-end run lifecycle (local, no GitHub)', () => {
   });
 
   it('validates the PR title and body and supports a dry run without remote actions', () => {
-    assert.equal(nuvio(['pr', '--title', 'Add booking', '--dry-run']).status, 1);
+    const autoTitled = nuvio(['pr', '--title', 'Add booking', '--dry-run']);
+    assert.equal(autoTitled.status, 2, autoTitled.stderr);
+    assert.match(autoTitled.stdout, /feat: add booking \[US-900\]/);
     assert.equal(
       nuvio(['pr', '--title', 'feat(reservations): demo booking [US-900]', '--dry-run']).status,
       2
