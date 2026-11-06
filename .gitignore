@@ -7,4 +7,6 @@ coverage/
 !.env.example
 apps/api/local.settings.json
 *.log
+.nuvio/
+AGENTS.local.md
 .DS_Store

@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "Exec(node tools/nuvio/cli.mjs)",
+      "Exec(pnpm build)",
+      "Exec(pnpm lint)",
+      "Exec(pnpm typecheck)",
+      "Exec(pnpm test)",
+      "Exec(pnpm test:automation)",
+      "Exec(pnpm nuvio)",
+      "Exec(pnpm -r)",
+      "Exec(pnpm --filter)",
+      "Exec(pnpm exec vitest)",
+      "Exec(pnpm exec eslint)",
+      "Exec(pnpm exec prettier)",
+      "Exec(git status)",
+      "Exec(git diff)",
+      "Exec(git log)",
+      "Exec(git show)",
+      "Exec(git add)",
+      "Exec(git commit)",
+      "Exec(git branch --show-current)",
+      "Exec(git rev-parse)",
+      "Exec(git merge-base)",
+      "Exec(git ls-files)",
+      "Exec(git fetch)"
+    ],
+    "deny": [
+      "Exec(gh pr merge)",
+      "Exec(git push --force)",
+      "Exec(git push -f)",
+      "Exec(git reset --hard)",
+      "Exec(rm -rf)",
+      "mcp__github__merge_pull_request",
+      "Write(.env)",
+      "Write(**/.env)",
+      "Write(**/.env.local)",
+      "Write(apps/api/local.settings.json)"
+    ]
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "baseBranch": "main",
+  "remote": "origin",
+  "runsDir": ".nuvio/runs",
+  "userStoriesDir": "docs/user-stories",
+  "maxFixAttempts": 3,
+  "maxReviewRounds": 3,
+  "migrationPathPattern": "(^|/)migrations/",
+  "validation": {
+    "quick": [
+      { "name": "lint", "command": "pnpm lint", "required": true },
+      { "name": "typecheck", "command": "pnpm typecheck", "required": true },
+      { "name": "test-affected", "command": "pnpm -r --filter \"...[{base}]\" test", "required": true }
+    ],
+    "full": [
+      { "name": "build", "command": "pnpm build", "required": true },
+      { "name": "lint", "command": "pnpm lint", "required": true },
+      { "name": "typecheck", "command": "pnpm typecheck", "required": true },
+      { "name": "test", "command": "pnpm test", "required": true },
+      { "name": "test-automation", "command": "pnpm test:automation", "required": true },
+      { "name": "dependency-audit", "command": "pnpm audit --prod --audit-level critical", "required": true }
+    ]
+  }
+}
