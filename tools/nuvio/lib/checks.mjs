@@ -1,3 +1,5 @@
+import { EXIT, NuvioError } from './core.mjs';
+
 const ALLOW_SECRET_MARKER = 'nuvio-allow-secret';
 
 const SECRET_RULES = [
@@ -45,8 +47,78 @@ const TEST_FILE_PATTERN = /(^|\/)(test|tests|__tests__)\/|\.(test|spec)\.[cm]?[j
 const FOCUSED_TEST_PATTERN = /\b(?:describe|it|test)\.only\s*\(|\bf(?:it|describe)\s*\(/;
 const SKIPPED_TEST_PATTERN = /\b(?:describe|it|test)\.skip\s*\(|\bx(?:it|describe)\s*\(/;
 
+const PR_TITLE_TYPES = new Set([
+  'feat',
+  'fix',
+  'refactor',
+  'perf',
+  'test',
+  'docs',
+  'build',
+  'ci',
+  'chore',
+  'style',
+  'revert'
+]);
+
 export const PR_TITLE_PATTERN =
   /^(feat|fix|refactor|perf|test|docs|build|ci|chore|style|revert)(\([a-z0-9][a-z0-9-]*\))?!?: \S.{0,90}\S \[US-\d{3,}\]$/;
+
+const US_TAG_PATTERN = /\bUS[-_ ]?(\d{1,5})\b/i;
+const TYPE_WORD_PATTERN = /^(?:feat|fix|refactor|perf|test|docs|build|ci|chore|style|revert)\s+/i;
+
+export function extractUsTag(input) {
+  if (input === undefined || input === null) return null;
+  const tagged = US_TAG_PATTERN.exec(String(input));
+  const digits =
+    tagged?.[1] ?? (/^\d{1,5}$/.test(String(input).trim()) ? String(input).trim() : null);
+  return digits ? `US-${digits.padStart(3, '0')}` : null;
+}
+
+export function inferBranchType(branch) {
+  const first = (branch ?? '').split('/')[0];
+  return PR_TITLE_TYPES.has(first) ? first : undefined;
+}
+
+function sanitizeScope(value) {
+  const clean = String(value ?? '')
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return clean || undefined;
+}
+
+function sanitizePrDescription(text) {
+  const clean = String(text ?? '')
+    .replace(/\[?US[-_ ]?\d{1,5}\]?/gi, ' ')
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .trim()
+    .replace(TYPE_WORD_PATTERN, '')
+    .toLowerCase();
+  return clean.length <= 88 ? clean : clean.slice(0, 88).replace(/\s+\S*$/, '');
+}
+
+export function resolvePrTitle(input, { usId, type, scope, description } = {}) {
+  if (typeof input === 'string' && PR_TITLE_PATTERN.test(input)) return input;
+  const resolvedUs = extractUsTag(input) ?? extractUsTag(usId);
+  if (!resolvedUs) {
+    throw new NuvioError(
+      'No se pudo determinar el identificador US para el título del PR.',
+      EXIT.usage
+    );
+  }
+  const prefix = /^([a-z]+)\s*(?:\(([^)]*)\))?\s*:\s*/i.exec(input ?? '');
+  const prefixType = prefix?.[1]?.toLowerCase();
+  const resolvedType = PR_TITLE_TYPES.has(prefixType) ? prefixType : (type ?? 'feat');
+  const resolvedScope = sanitizeScope(prefix?.[2]) ?? sanitizeScope(scope);
+  const body = input ? input.slice(prefix?.[0].length ?? 0) : '';
+  const desc = sanitizePrDescription(body) || sanitizePrDescription(description) || 'apply changes';
+  const title = `${resolvedType}${resolvedScope ? `(${resolvedScope})` : ''}: ${desc} [${resolvedUs}]`;
+  if (!PR_TITLE_PATTERN.test(title)) {
+    throw new NuvioError(`No se pudo generar un título válido ("${title}").`, EXIT.usage);
+  }
+  return title;
+}
 
 function result(name, failures, { warnings = [], required = true, passMessage } = {}) {
   const status = failures.length > 0 ? 'fail' : warnings.length > 0 ? 'warn' : 'pass';
