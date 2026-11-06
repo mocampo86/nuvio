@@ -1,0 +1,29 @@
+{
+  "name": "nuvio",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@9.15.4",
+  "engines": {
+    "node": ">=22.14.0 <23",
+    "pnpm": ">=9.15.4 <10"
+  },
+  "scripts": {
+    "dev:client": "pnpm --filter @nuvio/client dev",
+    "dev:admin": "pnpm --filter @nuvio/admin dev",
+    "dev:api": "pnpm --filter @nuvio/api dev",
+    "build": "pnpm -r build",
+    "lint": "eslint .",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.19.0",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9.19.0",
+    "globals": "^15.14.0",
+    "prettier": "^3.5.0",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.22.0"
+  }
+}
