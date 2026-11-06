@@ -10,7 +10,7 @@ Decisiones de negocio vigentes. Toda US debe preservarlas aunque no las mencione
 | INV-04 | La duración de una reserva es la suma de las duraciones de sus servicios. |
 | INV-05 | Una reserva pendiente de aprobación bloquea el horario correspondiente. |
 | INV-06 | La política de cancelación es de 24 horas. |
-| INV-07 | Administradores y profesionales pueden iniciar sesión con Google. |
+| INV-07 | Administradores y profesionales pueden iniciar sesión con Google, a través de Microsoft Entra External ID como plataforma de identidad con Google como proveedor federado. |
 | INV-08 | La integración inicial con Google Calendar solamente exporta reservas (no importa ni sincroniza en ambos sentidos). |
 | INV-09 | La disponibilidad considera profesionales, servicios, horarios y reservas existentes. |
 | INV-10 | Se previenen reservas duplicadas y condiciones de carrera (garantía en la persistencia, no solo en la lógica de aplicación). |

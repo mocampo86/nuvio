@@ -97,5 +97,5 @@ tools/nuvio/  CLI de automatización (estado de ejecuciones, quality gates, PR)
 
 - `.env` y `apps/api/local.settings.json` están excluidos de Git.
 - No hay secretos, credenciales Azure, conexión de base de datos ni recursos aprovisionados.
-- La autenticación con Microsoft Entra External ID queda preparada como trabajo futuro; no se implementa en US-050.
+- La autenticación utilizará Microsoft Entra External ID con Google como proveedor de identidad federado (INV-07); queda como trabajo futuro, no se implementa en US-050.
 - El workflow de Pull Request en `.github/workflows/ci.yml` instala usando el lockfile y ejecuta lint, tipos, pruebas y compilación.
