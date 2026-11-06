@@ -1,12 +1,9 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { healthResponseSchema } from '@nuvio/shared';
+import type { HealthResponse } from '@nuvio/shared';
 import './styles.css';
 
-const healthResponse = healthResponseSchema.parse({
-  status: 'ok',
-  service: 'nuvio-api'
-});
+const healthService: HealthResponse['service'] = 'nuvio-api';
 
 function App() {
   return (
@@ -18,7 +15,7 @@ function App() {
         <h1 className="text-5xl font-bold tracking-tight">Nuvio</h1>
         <p className="mt-6 text-xl leading-8">Bienvenido a Nuvio, tu próximo turno empieza acá.</p>
         <p className="mt-3 text-stone-600">Esta es la aplicación para clientes.</p>
-        <p className="mt-8 text-sm text-stone-500">Servicio compartido: {healthResponse.service}</p>
+        <p className="mt-8 text-sm text-stone-500">Servicio compartido: {healthService}</p>
       </section>
     </main>
   );
