@@ -14,7 +14,9 @@
     "build": "pnpm -r build",
     "lint": "eslint .",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm -r test"
+    "test": "pnpm -r test",
+    "test:automation": "node --test \"tools/nuvio/test/*.test.mjs\"",
+    "nuvio": "node tools/nuvio/cli.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",

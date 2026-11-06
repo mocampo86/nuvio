@@ -1,0 +1,26 @@
+{
+  "PreToolUse": [
+    {
+      "matcher": "^(exec|mcp__.*)$",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node tools/nuvio/hooks/guard-command.mjs",
+          "timeout": 10
+        }
+      ]
+    }
+  ],
+  "SessionStart": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node tools/nuvio/hooks/session-start.mjs",
+          "timeout": 10
+        }
+      ]
+    }
+  ]
+}

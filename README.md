@@ -70,7 +70,12 @@ pnpm build
 pnpm lint
 pnpm typecheck
 pnpm test
+pnpm test:automation
 ```
+
+## Desarrollo de User Stories con Devin
+
+Abrir el repositorio en Devin Desktop y ejecutar `/nuvio-us US-XXX` (o pegar la US). Guía completa: [docs/engineering/nuvio-automation.md](docs/engineering/nuvio-automation.md).
 
 ## Estructura
 
@@ -83,7 +88,9 @@ packages/
   shared/     Esquemas Zod y tipos compartidos
   database/   Paquete reservado para la futura capa de datos
 infra/        Reservado para infraestructura futura
-docs/         Arquitectura e historias de usuario
+docs/         Arquitectura, ingeniería e historias de usuario
+tools/nuvio/  CLI de automatización (estado de ejecuciones, quality gates, PR)
+.devin/       Skills, subagente reviewer, hooks y permisos de Devin
 ```
 
 ## Seguridad y alcance
