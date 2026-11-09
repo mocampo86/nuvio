@@ -42,8 +42,8 @@ param budgetAmount int = 30
 @description('Emails para alertas de presupuesto.')
 param budgetContactEmails string[] = []
 
-@description('Inicio del período de presupuesto (primer día del mes, ISO 8601).')
-param budgetStartDate string = '2026-12-01'
+@description('Inicio del período de presupuesto (primer día del mes). Por defecto, el mes en curso al momento del despliegue.')
+param budgetStartDate string = utcNow('yyyy-MM-01')
 
 var tags = {
   project: 'nuvio'

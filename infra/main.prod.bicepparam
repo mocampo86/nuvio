@@ -17,7 +17,8 @@ param appInsightsName = 'appi-nuvio-prod'
 param planName = 'asp-nuvio-prod'
 
 // Presupuesto: definido pero NO desplegado por defecto.
+// budgetStartDate no se fija: usa el mes en curso al desplegar (los presupuestos
+// exigen una fecha de inicio vigente; un literal quedaría obsoleto).
 param deployBudget = false
 param budgetAmount = 30
 param budgetContactEmails = []
-param budgetStartDate = '2026-12-01'

@@ -37,4 +37,4 @@ az deployment sub create --name nuvio-infra-prod --location brazilsouth `
   --parameters infra/main.prod.bicepparam
 ```
 
-El principal que despliega necesita `Contributor` **y** `User Access Administrator` (o `Owner`) en el resource group, porque la plantilla crea role assignments para la identidad administrada de la Function App.
+El principal que despliega necesita `Contributor` **y** `User Access Administrator` (o `Owner`) **en la suscripción** (la plantilla crea el resource group a scope de suscripción y role assignments para la identidad administrada de la Function App).

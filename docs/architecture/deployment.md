@@ -21,10 +21,7 @@ repo:mocampo86@41837332/nuvio@1448666597:ref:refs/heads/main
 ```powershell
 $SUB = (az account show --query id -o tsv)
 
-# User-assigned managed identity para los despliegues
-az identity create --name nuvio-github-deploy --resource-group rg-nuvio-deploy --location brazilsouth
-# (crear antes el RG: az group create -n rg-nuvio-deploy -l brazilsouth)
-
+# App registration + service principal para OIDC
 $APPID = az ad app create --display-name nuvio-github-deploy --query appId -o tsv
 az ad sp create --id $APPID
 
@@ -42,7 +39,7 @@ az ad app federated-credential create --id $APPID --parameters '{
 }'
 ```
 
-> Verificar el `sub` real una vez: ejecutar un workflow de prueba que imprima `${{ github.token }}`... o revisar el token OIDC emitido (`actions oidc` endpoint) y ajustar el subject si difiere. **No usar `*` ni subject por nombre de repo**.
+> Verificar el formato de `sub` que emite GitHub para este repo una vez: `gh api repos/mocampo86/nuvio/actions/oidc/customization/sub`. Para repositorios creados después del 15/07/2026 el formato usa IDs inmutables como el de arriba; si el endpoint reporta la plantilla clásica por nombre, ajustar el subject a `repo:mocampo86/nuvio:ref:refs/heads/main`. **No usar `*` ni un subject genérico**.
 
 Variables del repositorio (no secrets; son identificadores no sensibles):
 
@@ -70,6 +67,8 @@ az functionapp list --query "[?name=='nuvio-api-prod']"   # debe devolver []
 az staticwebapp list --query "[?name=='nuvio-client-prod' || name=='nuvio-admin-prod']"
 ```
 
+> Estos comandos solo listan recursos **de tu suscripción** — no detectan nombres tomados por otros tenants (los nombres son globalmente únicos). La verificación real es `az deployment sub what-if`, que falla si el nombre está ocupado globalmente.
+
 Si están ocupados, cambiar los params en `infra/main.prod.bicepparam`.
 
 ## 5. Validar y previsualizar
@@ -84,7 +83,7 @@ az deployment sub what-if --location brazilsouth `
 
 ## 6. Ejecutar el despliegue
 
-1. En GitHub → Actions → **Deploy production** → Run workflow (solo aparece `main`).
+1. En GitHub → Actions → **Deploy production** → Run workflow. El selector de rama muestra todas las ramas que contienen el archivo, pero los jobs solo se ejecutan desde `main` (`if: github.ref == 'refs/heads/main'` + restricción del Environment); un dispatch desde otra rama finaliza sin desplegar nada.
 2. El job `preflight` valida `AZURE_DEPLOY_ENABLED`, las variables y que el último CI `verify` en ese commit pasó.
 3. El job `deploy` espera la **aprobación del reviewer** del Environment, luego: despliega Bicep → compila → empaqueta la API (`pnpm deploy --prod`) → publica Functions → publica ambas SWA (tokens obtenidos en el job, enmascarados, efímeros) → health check.
 

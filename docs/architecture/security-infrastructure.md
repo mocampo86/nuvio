@@ -13,7 +13,7 @@ Azure OIDC **no reemplaza** el deployment token de SWA (mecanismo propio del ser
 
 ## Identidades administradas y RBAC
 
-- Function App: **user-assigned managed identity** única con los roles mínimos requeridos por el host: Storage Blob Data Owner, Storage Queue Data Contributor, Storage Table Data Contributor (solo sobre `st<nuvio>`) y Monitoring Metrics Publisher (solo sobre `appi-nuvio-prod`).
+- Function App: **user-assigned managed identity** única (`AzureWebJobsStorage__credential=managedidentity` + `__clientId`) con los roles mínimos requeridos por el host: Storage Blob Data Owner, Storage Queue Data Contributor, Storage Table Data Contributor (solo sobre `st<nuvio>`) y Monitoring Metrics Publisher (solo sobre `appi-nuvio-prod`).
 - Sin `allowSharedKeyAccess`: no existen claves de storage que filtrar. Todo acceso a datos es Entra/RBAC auditado.
 - La identidad de despliegue (OIDC) recibe `Contributor` + `User Access Administrator` **en el scope de despliegue** porque la plantilla crea role assignments — se documenta el motivo; no es Owner a nivel organización.
 

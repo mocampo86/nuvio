@@ -13,8 +13,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  id-token: write
   contents: read
+  checks: read
 
 concurrency:
   group: deploy-production
@@ -46,7 +46,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           conclusion=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs" \
-            --jq '[.check_runs[] | select(.name == "verify")] | first.conclusion')
+            --jq '(first(.check_runs[] | select(.name == "verify")) // {}).conclusion // "none"')
           if [ "$conclusion" != "success" ]; then
             echo "::error::Latest CI 'verify' check-run on ${{ github.sha }} did not succeed (got: ${conclusion:-none})."
             exit 1
@@ -58,6 +58,10 @@ jobs:
     needs: preflight
     environment: production
     if: github.ref == 'refs/heads/main'
+    timeout-minutes: 30
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -104,7 +108,7 @@ jobs:
         with:
           app-name: ${{ steps.outputs.outputs.apiAppName }}
           package: api-package
-          scm-do-build-during-deployment: false
+          sku: flexconsumption
           remote-build: false
           respect-funcignore: true
       - name: Deploy client Static Web App
@@ -115,7 +119,7 @@ jobs:
             --query properties.apiKey -o tsv)
           echo "::add-mask::$TOKEN"
           SWA_CLI_DEPLOYMENT_TOKEN=$TOKEN npx -y @azure/static-web-apps-cli@2 deploy \
-            apps/client/dist --deployment-environment production
+            apps/client/dist --env production
       - name: Deploy admin Static Web App
         run: |
           TOKEN=$(az staticwebapp secrets list \
@@ -124,14 +128,14 @@ jobs:
             --query properties.apiKey -o tsv)
           echo "::add-mask::$TOKEN"
           SWA_CLI_DEPLOYMENT_TOKEN=$TOKEN npx -y @azure/static-web-apps-cli@2 deploy \
-            apps/admin/dist --deployment-environment production
+            apps/admin/dist --env production
       - name: Health check API
         run: |
-          for i in 1 2 3 4 5; do
+          for i in $(seq 1 10); do
             body=$(curl -fsS "https://${{ steps.outputs.outputs.apiHostname }}/api/health" || true)
             echo "attempt $i: $body"
             echo "$body" | grep -q '"status":"ok"' && exit 0
-            sleep 15
+            sleep 30
           done
           echo "::error::API health check failed after deployment."
           exit 1

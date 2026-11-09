@@ -3,12 +3,14 @@ name: Continuous Integration
 on:
   pull_request:
     branches: [main]
+  push:
+    branches: [main]
 
 permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.event.pull_request.number }}
+  group: ci-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 
 jobs:
@@ -33,6 +35,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Quality gates (secrets, sensitive files, migrations, removed or focused tests, PR title)
+        if: github.event_name == 'pull_request'
         env:
           NUVIO_BASE_REF: origin/${{ github.base_ref }}
           NUVIO_PR_TITLE: ${{ github.event.pull_request.title }}
@@ -59,7 +62,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Build Bicep templates
-        run: az bicep build --file infra/main.bicep --stdout > /dev/null
+        run: |
+          az bicep build --file infra/main.bicep --stdout > /dev/null
+          az bicep build-params --file infra/main.prod.bicepparam --stdout > /dev/null
       - name: Validate workflow YAML syntax
         run: |
           for f in .github/workflows/*.yml; do npx -y js-yaml@4.3.2 "$f" > /dev/null; done
