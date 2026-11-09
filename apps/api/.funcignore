@@ -1,0 +1,12 @@
+.git*
+.vscode
+local.settings.json
+test
+src
+vitest.config.ts
+tsconfig.json
+node_modules/.tmp
+dist/test
+dist/vitest.config.js
+*.tsbuildinfo
+*.md
