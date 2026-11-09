@@ -24,6 +24,13 @@ Reglas:
 
 Contextos previstos: `reservations`, `availability`, `catalog` (servicios), `staff` (profesionales), `salons`, `identity`.
 
+## Infraestructura de producción (US-051)
+
+- [azure-infrastructure.md](azure-infrastructure.md) — recursos, decisiones y compatibilidad (SWA Free, Flex Consumption, Node 22).
+- [azure-cost-estimate.md](azure-cost-estimate.md) — costos estimados y riesgos.
+- [deployment.md](deployment.md) — activación OIDC, Environment y despliegue manual protegido.
+- [security-infrastructure.md](security-infrastructure.md) — identidades, tokens, CORS y protección del pipeline.
+
 ## Decisiones
 
 Registro en [`adr/`](adr/). Reglas de negocio invariantes: [domain-invariants.md](domain-invariants.md).
