@@ -4,7 +4,7 @@
 
 - `azure/login@v2` con federated credential: **no hay client secrets ni certificados** almacenados en GitHub.
 - El credential se fija al `sub` **inmutable** del repo (`repo:mocampo86@41837332/nuvio@1448666597:ref:refs/heads/main`): un fork o repo renombrado no puede reutilizarlo.
-- `permissions:` mínimos: `id-token: write` + `contents: read`; `GITHUB_TOKEN` no tiene escritura.
+- `permissions:` mínimos: `contents: read` global, `checks: read` global (solo lectura, usado por el preflight para verificar CI) y `id-token: write` **solo en el job `deploy`** (preflight no puede emitir tokens OIDC); `GITHUB_TOKEN` sin escritura.
 - La identidad OIDC solo puede ejecutarse desde `main` + Environment `production` con aprobación humana.
 
 ## Tokens de despliegue de Static Web Apps
@@ -29,7 +29,7 @@ Azure OIDC **no reemplaza** el deployment token de SWA (mecanismo propio del ser
 
 ## Secretos y datos sensibles
 
-- Cero secretos en el repo: `local.settings.json` está en `.gitignore` y `.funcignore`; ningún app setting contiene claves (la connection string de App Insights sin DisableLocalAuth no permite ingesta porque `DisableLocalAuth: true` exige AAD).
+- Cero secretos en el repo: `local.settings.json` está en `.gitignore` y `.funcignore`; ningún app setting contiene claves (la connection string de App Insights contiene una instrumentation key, pero no permite ingesta porque `DisableLocalAuth: true` exige AAD).
 - Logs: `logLevel: Information` (sin Debug/Trace en prod), sampling activo; la API no loguea bodies ni query strings. Sin tokens, contraseñas ni datos personales en telemetría.
 - El workflow no imprime tokens: `add-mask` antes de cualquier uso; falla explícito sin exponer variables.
 

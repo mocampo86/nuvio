@@ -24,6 +24,7 @@ jobs:
   preflight:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
+    timeout-minutes: 10
     steps:
       - name: Check deployment is enabled
         run: |
@@ -45,8 +46,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          conclusion=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs" \
-            --jq '(first(.check_runs[] | select(.name == "verify")) // {}).conclusion // "none"')
+          conclusion=$(gh api --paginate --slurp \
+            "repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs" \
+            --jq '([.[].check_runs[] | select(.name == "verify")] | sort_by(.completed_at) | last // {}).conclusion // "none"')
           if [ "$conclusion" != "success" ]; then
             echo "::error::Latest CI 'verify' check-run on ${{ github.sha }} did not succeed (got: ${conclusion:-none})."
             exit 1

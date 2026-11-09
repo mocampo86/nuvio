@@ -23,12 +23,14 @@ $SUB = (az account show --query id -o tsv)
 
 # App registration + service principal para OIDC
 $APPID = az ad app create --display-name nuvio-github-deploy --query appId -o tsv
-az ad sp create --id $APPID
+$SPOID = az ad sp create --id $APPID --query id -o tsv
 
 # Permisos en el scope donde se desplegará (la suscripción, porque main.bicep crea el RG).
 # Contributor recursos + User Access Administrator por los roleAssignments de la plantilla.
-az role assignment create --assignee $APPID --role Contributor --scope "/subscriptions/$SUB"
-az role assignment create --assignee $APPID --role "User Access Administrator" --scope "/subscriptions/$SUB"
+# Nota: si falla con PrincipalNotFound, el SP todavía no se replicó en Entra — esperar ~30s y reintentar.
+Start-Sleep -Seconds 30
+az role assignment create --assignee-object-id $SPOID --assignee-principal-type ServicePrincipal --role Contributor --scope "/subscriptions/$SUB"
+az role assignment create --assignee-object-id $SPOID --assignee-principal-type ServicePrincipal --role "User Access Administrator" --scope "/subscriptions/$SUB"
 
 # Credencial federada para main (sub inmutable)
 az ad app federated-credential create --id $APPID --parameters '{
@@ -39,7 +41,7 @@ az ad app federated-credential create --id $APPID --parameters '{
 }'
 ```
 
-> Verificar el formato de `sub` que emite GitHub para este repo una vez: `gh api repos/mocampo86/nuvio/actions/oidc/customization/sub`. Para repositorios creados después del 15/07/2026 el formato usa IDs inmutables como el de arriba; si el endpoint reporta la plantilla clásica por nombre, ajustar el subject a `repo:mocampo86/nuvio:ref:refs/heads/main`. **No usar `*` ni un subject genérico**.
+> Verificar el `sub` real una vez: `gh api repos/mocampo86/nuvio --jq '{owner: .owner.id, repo: .id}'` debe devolver `41837332` y `1448666597` — el subject se compone como `repo:<login>@<owner_id>/<repo>@<repo_id>:ref:refs/heads/main`. El endpoint `actions/oidc/customization/sub` solo muestra la plantilla configurada, no el claim emitido. **No usar `*` ni un subject genérico**.
 
 Variables del repositorio (no secrets; son identificadores no sensibles):
 
